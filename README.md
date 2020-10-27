@@ -1,10 +1,13 @@
 # FileBasedMiniDMS
 
 FileBasedMiniDMS.php    by Stefan Weiss (2017-2019)  
-*Version 0.15 27.09.2019*  
 https://github.com/stweiss/FileBasedMiniDMS  
 
 ### CHANGELOG
+Version 0.16 (29.10.2019)
+- Add date format 01. Januar, 2019 / 01 Januar 2019 (thanks @SirUli) (pull #12)
+- internal clean up
+
 Version 0.15 (27.09.2019)
 - now compatible with ocrmypdf v9.0.0
 

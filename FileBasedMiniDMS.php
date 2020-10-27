@@ -2,7 +2,7 @@
     /* 
         FileBasedMiniDMS.php    by Stefan Weiss (2017-2019)
     */
-    $version = "0.15";
+    $version = "0.16";
     
     require(dirname(__FILE__) . "/config.php");
     
@@ -75,12 +75,6 @@
             if (fnmatch($matchWithoutOCR, $scanpath_parts['filename'], FNM_CASEFOLD))
             {
                 $ocrfilename = getOCRfilename($scan);
-                $user_id = exec('stat -c "%u" "'. $scan .'"');
-                if (!is_numeric($user_id))
-                {
-                    trace(LOG_ERROR, "Could not get uid of file $scan\n");
-                    continue;
-                }
                 $cmd = "docker run --name ocr --rm -i $dockercontainer $ocropt - - <\"$scan\" 2>&1 >\"$ocrfilename\"";
                 trace(LOG_DEBUG, "Run Docker: $cmd\n");
                 
@@ -257,6 +251,13 @@
         $namedate = date('Y' . $dateseperator . 'm' . $dateseperator . 'd', filemtime($filename));
         foreach ($textarr as $line) {
             unset($matches);
+            if (preg_match("/(31|30|[012]\d|\d)(?:\s|,|\.)+(Jan(?:uar)(?:y)?|Feb(?:ruar)(?:y)?|(Mar(?:ch)|Mär(?:z))?|Apr(?:il)?|Ma(?:i|y)|Jun(?:e|i)?|Jul(?:y|i)?|Aug(?:ust)?|Sep(?:t)(?:ember)?|O(?:c|k)t(?:ober)?|Nov(?:ember)?|De(?:c|z)(?:ember)?)(?:\s|,|\.)+(20[0-9][0-9])/", $line, $matches)) { // 01. Januar, 2019 / 01 Januar 2019 etc
+                // https://stackoverflow.com/questions/41184853/php-parsing-of-german-date
+                $germanMonths = array('januar'=>'january', 'jan'=>'january', 'jän'=>'january', 'februar'=>'february', 'feb'=>'february', 'marz'=>'march', 'märz'=>'march', 'mai'=>'may', 'juni'=>'june', 'oktober'=>'october', 'okt'=>'october', 'sept'=>'september', 'dezember'=>'december', 'dez'=>'december');
+                $namedate = date("Y" . $dateseperator . "m" . $dateseperator . "d", strtotime(strtr(strtolower($matches[1] . ". " . $matches[2] . " " . $matches[4]), $germanMonths)));
+                break;
+            }
+	    unset($matches);
             if (preg_match("/(31|30|[012]\d|\d)[-.\/](0\d|1[012]|\d)[-.\/](20[0-9][0-9])/", $line, $matches)) { // dd.mm.20yy
                 $namedate = join($dateseperator, array($matches[3], $matches[2], $matches[1]));
                 break;
